@@ -390,7 +390,7 @@ export class PrimaryData {
         for (let raw_line of lines)
         {
             let line = new GTFLine(raw_line);
-            if ((!line.valid) || (line.feature !== "exon"))
+            if (!(line.valid) || !(line.feature == "exon" || line.feature == "CDS"))
                 continue;
 
             let gene_to_search = this.gene;
@@ -424,16 +424,30 @@ export class PrimaryData {
             if (!line.isStringTie)
                 transcript = transcript.split(".")[0];
 
-            if (!(transcript in this.transcripts))
-                this.transcripts[transcript] = {};
+            if (line.feature == "exon")
+            {
+                if (!(transcript in this.transcripts))
+                    this.transcripts[transcript] = {};
 
-            if (!this.transcripts[transcript].exon_count)
-                this.transcripts[transcript].exon_count = 0;
+                if (!this.transcripts[transcript].exon_count)
+                    this.transcripts[transcript].exon_count = 0;
 
-            let exon = this.transcripts[transcript].exon_count;
-            this.transcripts[transcript][exon] = line.range;
-            this.transcripts[transcript].strand = line.strand;
-            this.transcripts[transcript].exon_count += 1;
+                let exon = this.transcripts[transcript].exon_count;
+                this.transcripts[transcript][exon] = line.range;
+                this.transcripts[transcript].strand = line.strand;
+                this.transcripts[transcript].exon_count += 1;
+            }
+            else if (line.feature == "CDS")
+            {
+                if (!(transcript in this.transcripts))
+                    continue; // don't want to add a transcript without exons
+                              // as a consequence, CDS must follow exons in GTF
+                
+                if (!this.transcripts[transcript].orf)
+                    this.transcripts[transcript].orf = [];
+
+                this.transcripts[transcript].orf.push(line.range);
+            }
         }
     }
 
@@ -1726,7 +1740,7 @@ class Isoform {
         this.start = this.strand == '+' ? this.exonRanges[0][0] : this.exonRanges[this.exonRanges.length - 1][1];
         this.end = this.strand == '+' ? this.exonRanges[this.exonRanges.length - 1][1] : this.exonRanges[0][0];
         this.length = Math.abs(this.end - this.start);
-        this.orf = []
+        this.orf = exons.orf ?? [];
     }
 }
 

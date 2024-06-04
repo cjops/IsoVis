@@ -40,8 +40,8 @@ Requires mainData object which is used here to update the relevant data other co
             <b-dropdown-item v-if="!protein_disabled && protein_ready && show_stack" @click="setShowDomainLabels(!show_protein_labels)" v-b-tooltip.hover.right="'Display the labels of shown protein domains (externally sourced)'">
                 Protein domain labels (beta)<b-icon-check v-if="show_protein_labels" variant="success"></b-icon-check>
             </b-dropdown-item>
-            <b-dropdown-item v-if="orfs_ready && !no_orfs && show_stack" @click="setShowOrfs(!show_orfs)" v-b-tooltip.hover.right="'Display known ORFs for known transcripts (externally sourced)'">
-                Known ORFs<b-icon-check v-if="show_orfs" variant="success"></b-icon-check>
+            <b-dropdown-item v-if="orfs_ready && !no_orfs && show_stack" @click="setShowOrfs(!show_orfs)" v-b-tooltip.hover.right="'Display ORFs (externally sourced for known transcripts)'">
+                Open reading frames (ORFs)<b-icon-check v-if="show_orfs" variant="success"></b-icon-check>
             </b-dropdown-item>
             <b-dropdown-item v-if="(canon_disabled || protein_disabled || protein_ready) && !is_other_isoforms_button_clicked" @click="getAllOtherIsoforms()" v-b-tooltip.hover.right="'Load all other Ensembl isoforms of the displayed gene that are not present in the uploaded isoform data (externally sourced)'">
                 Load all other Ensembl isoforms (beta)
@@ -1915,7 +1915,7 @@ export default
                     if (!isoform || !isoform.transcriptID)
                         continue;
 
-                    if (isoform.transcriptID in ORFs)
+                    if (isoform.transcriptID in ORFs && !isoform.orf) // user ORFs take precedence over fetched ORFs
                     {
                         isoform.orf = ORFs[isoform.transcriptID];
                     }
@@ -1929,7 +1929,7 @@ export default
                     if (!isoform || !isoform.transcriptID)
                         continue;
 
-                    if (isoform.transcriptID in ORFs)
+                    if (isoform.transcriptID in ORFs && !isoform.orf) // user ORFs take precedence over fetched ORFs
                     {
                         isoform.orf = ORFs[isoform.transcriptID];
                     }
