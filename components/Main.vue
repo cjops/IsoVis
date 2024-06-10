@@ -1908,6 +1908,8 @@ export default
          */
         updateORFs(ORFs)
         {
+            let nUserORFs = 0;
+
             if (this.mainData.isoformData && this.mainData.isoformData.isoformList)
             {
                 for (var isoform of this.mainData.isoformData.isoformList)
@@ -1915,7 +1917,13 @@ export default
                     if (!isoform || !isoform.transcriptID)
                         continue;
 
-                    if (isoform.transcriptID in ORFs && !isoform.orf) // user ORFs take precedence over fetched ORFs
+                    if (isoform.orf && isoform.orf.length > 0)
+                    {
+                        nUserORFs++;
+                        continue; // user ORFs take precedence over fetched ORFs
+                    }
+
+                    if (isoform.transcriptID in ORFs)
                     {
                         isoform.orf = ORFs[isoform.transcriptID];
                     }
@@ -1924,12 +1932,19 @@ export default
 
             if (this.mainData.isoformData && this.mainData.isoformData.allIsoforms)
             {
+                nUserORFs = 0;
                 for (var isoform of this.mainData.isoformData.allIsoforms)
                 {
                     if (!isoform || !isoform.transcriptID)
                         continue;
 
-                    if (isoform.transcriptID in ORFs && !isoform.orf) // user ORFs take precedence over fetched ORFs
+                    if (isoform.orf && isoform.orf.length > 0)
+                    {
+                        nUserORFs++;
+                        continue; // user ORFs take precedence over fetched ORFs
+                    }
+
+                    if (isoform.transcriptID in ORFs)
                     {
                         isoform.orf = ORFs[isoform.transcriptID];
                     }
@@ -1949,7 +1964,7 @@ export default
             }
 
             this.orfs_ready = true;
-            this.no_orfs = (Object.keys(ORFs).length === 0);
+            this.no_orfs = (Object.keys(ORFs).length === 0 && nUserORFs === 0);
         },
 
         /**
